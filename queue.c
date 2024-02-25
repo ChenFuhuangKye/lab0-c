@@ -30,8 +30,8 @@ void q_free(struct list_head *head)
     struct list_head *next = head->next;
     while (next != head) {
         element_t *node = list_entry(next, element_t, list);
-        q_release_element(node);
         next = next->next;
+        q_release_element(node);
     }
     free(head);
 }
