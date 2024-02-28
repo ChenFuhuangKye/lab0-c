@@ -196,15 +196,11 @@ void q_reverse(struct list_head *head)
 {
     if (!head || list_empty(head))
         return;
-    struct list_head *end = head;
-    struct list_head *node = head->next;
-    struct list_head *safe = node->next;
+    struct list_head *node;
+    struct list_head *safe;
 
-    while (node != end && safe != end) {
-        list_move_tail(node, end);
-        end = end->prev;
-        node = safe;
-        safe = safe->next;
+    list_for_each_safe (node, safe, head) {
+        list_move(node, head);
     }
 }
 
