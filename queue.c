@@ -181,6 +181,16 @@ void q_swap(struct list_head *head)
     }
 }
 
+void q_print(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+    element_t *it = NULL;
+    list_for_each_entry (it, head, list) {
+        printf("%s ", it->value);
+    }
+    printf("\n");
+}
 /* Reverse elements in queue */
 void q_reverse(struct list_head *head)
 {
