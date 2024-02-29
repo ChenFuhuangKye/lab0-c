@@ -267,13 +267,9 @@ int q_ascend(struct list_head *head)
         if (strcmp(front->value, cur->value) > 0) {
             list_del(node);
             q_release_element(cur);
-            node = safe;
-            safe = node->prev;
-        } else {
-            node = safe;
-            safe = safe->prev;
         }
-
+        node = safe;
+        safe = safe->prev;
     }
     return q_size(head);
 }
