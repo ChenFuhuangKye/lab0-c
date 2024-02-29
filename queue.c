@@ -224,15 +224,15 @@ void q_reverseK(struct list_head *head, int k)
 }
 
 /* Sort elements of queue in ascending/descending order */
-void quick_sort(struct list_head *head, struct list_head *end);
+void quick_sort(struct list_head *head, struct list_head *end, bool descend);
 void q_sort(struct list_head *head, bool descend)
 {
     if (!head || list_empty(head))
         return;
-    quick_sort(head, head);
+    quick_sort(head, head, descend);
 }
 
-void quick_sort(struct list_head *head, struct list_head *end)
+void quick_sort(struct list_head *head, struct list_head *end, bool descend)
 {
     struct list_head *safe;
     struct list_head *pivot = head->next;
@@ -241,7 +241,8 @@ void quick_sort(struct list_head *head, struct list_head *end)
     while (node != end) {
         element_t *elem = list_entry(node, element_t, list);
         safe = node->next;
-        if (strcmp(elem->value, value) < 0) {
+        if (descend ? strcmp(elem->value, value) > 0
+                    : strcmp(elem->value, value) < 0) {
             list_move_tail(node, pivot);
         } else {
             list_move(node, pivot);
@@ -249,9 +250,9 @@ void quick_sort(struct list_head *head, struct list_head *end)
         node = safe;
     }
     if (head->next != pivot && head->next->next != pivot)
-        quick_sort(head, pivot);
+        quick_sort(head, pivot, descend);
     if (pivot->next != end && pivot->next->next != end)
-        quick_sort(pivot, end);
+        quick_sort(pivot, end, descend);
 }
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
