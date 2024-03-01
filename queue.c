@@ -207,12 +207,16 @@ void q_reverseK(struct list_head *head, int k)
 }
 
 /* Sort elements of queue in ascending/descending order */
-void quick_sort(struct list_head *head, struct list_head *end, bool descend);
+void merge_sort(struct list_head *head, bool descend);
+void merge_list(struct list_head *head,
+                struct list_head *left,
+                struct list_head *right,
+                bool descend);
 void q_sort(struct list_head *head, bool descend)
 {
     if (!head || list_empty(head))
         return;
-    quick_sort(head, head, descend);
+    merge_sort(head, descend);
 }
 
 void quick_sort(struct list_head *head, struct list_head *end, bool descend)
@@ -237,6 +241,50 @@ void quick_sort(struct list_head *head, struct list_head *end, bool descend)
     if (pivot->next != end && pivot->next->next != end)
         quick_sort(pivot, end, descend);
 }
+
+void merge_sort(struct list_head *head, bool descend)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
+    struct list_head *mid = head;
+    for (struct list_head *fast = head->next;
+         fast != head && fast->next != head; fast = fast->next->next)
+        mid = mid->next;
+
+    LIST_HEAD(left);
+    LIST_HEAD(right);
+
+    list_cut_position(&left, head, mid);
+    list_splice_init(head, &right);
+
+    merge_sort(&left, descend);
+    merge_sort(&right, descend);
+
+    merge_list(head, &left, &right, descend);
+}
+
+void merge_list(struct list_head *head,
+                struct list_head *left,
+                struct list_head *right,
+                bool descend)
+{
+    LIST_HEAD(tmp);
+
+    while (!list_empty(left) && !list_empty(right)) {
+        element_t *left_entry = list_entry(left->next, element_t, list);
+        element_t *right_entry = list_entry(right->next, element_t, list);
+        if (descend ? strcmp(left_entry->value, right_entry->value) > 0
+                    : strcmp(left_entry->value, right_entry->value) < 0) {
+            list_move_tail(left->next, &tmp);
+        } else {
+            list_move_tail(right->next, &tmp);
+        }
+    }
+    list_splice_tail_init(list_empty(left) ? right : left, &tmp);
+    list_splice_init(&tmp, head);
+}
+
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
 int q_ascend(struct list_head *head)
