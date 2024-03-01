@@ -212,11 +212,15 @@ void q_reverseK(struct list_head *head, int k)
     struct list_head *safe;
     struct list_head *start = head;
     int count = 0;
+    int limit = q_size(head) / k;
 
     list_for_each_safe (node, safe, head) {
         if (count == k) {
             start = node->prev;
             count = 0;
+            limit--;
+            if (limit == 0)
+                break;
         }
         list_move(node, start);
         count++;
