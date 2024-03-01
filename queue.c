@@ -81,21 +81,14 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     }
     return node;
 }
-
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
     if (!head || list_empty(head))
         return NULL;
+    list_move(head->prev, head);
 
-    element_t *node = list_last_entry(head, element_t, list);
-    list_del(&node->list);
-
-    if (sp) {
-        memcpy(sp, node->value, bufsize);
-        sp[bufsize - 1] = '\0';
-    }
-    return node;
+    return q_remove_head(head, sp, bufsize);
 }
 
 /* Return number of elements in queue */
