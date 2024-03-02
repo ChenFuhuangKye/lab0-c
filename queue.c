@@ -153,10 +153,14 @@ void q_swap(struct list_head *head)
     if (!head || list_empty(head))
         return;
 
-    struct list_head *cur = head->next;
-    while (cur != head && cur->next != head) {
-        list_move(cur, cur->next);
-        cur = cur->next;
+    struct list_head *node;
+    struct list_head *safe;
+
+    list_for_each_safe (node, safe, head) {
+        if (safe == head)
+            break;
+        list_move(node, safe);
+        safe = node->next;
     }
 }
 
