@@ -46,6 +46,7 @@ extern int show_entropy;
 #include "list_sort.h"
 #include "queue.h"
 #include "report.h"
+#include "tim_sort.h"
 
 /* Settable parameters */
 
@@ -938,6 +939,56 @@ static bool do_list_sort(int argc, char *argv[])
     return ok && !error_check();
 }
 
+static bool do_tim_sort(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    int cnt = 0;
+    if (!current || !current->q)
+        report(3, "Warning: Calling sort on null queue");
+    else
+        cnt = q_size(current->q);
+    error_check();
+
+    if (cnt < 2)
+        report(3, "Warning: Calling sort on single node");
+    error_check();
+
+    set_noallocate_mode(true);
+    if (current && exception_setup(true))
+        timsort(NULL, current->q, list_cmp);
+    exception_cancel();
+    set_noallocate_mode(false);
+
+    bool ok = true;
+    if (current && current->size) {
+        for (struct list_head *cur_l = current->q->next;
+             cur_l != current->q && --cnt; cur_l = cur_l->next) {
+            /* Ensure each element in ascending/descending order */
+            element_t *item, *next_item;
+            item = list_entry(cur_l, element_t, list);
+            next_item = list_entry(cur_l->next, element_t, list);
+            if (!descend && strcmp(item->value, next_item->value) > 0) {
+                report(1, "ERROR: Not sorted in ascending order");
+                ok = false;
+                break;
+            }
+
+            if (descend && strcmp(item->value, next_item->value) < 0) {
+                report(1, "ERROR: Not sorted in descending order");
+                ok = false;
+                break;
+            }
+        }
+    }
+
+    q_show(3);
+    return ok && !error_check();
+}
+
 static bool is_circular()
 {
     struct list_head *cur = current->q->next;
@@ -1117,6 +1168,8 @@ static void console_init()
                 "[K]");
     ADD_COMMAND(list_sort,
                 "Use list_sort to sort queue in ascending/descening order", "");
+    ADD_COMMAND(tim_sort,
+                "Use tim_sort to sort queue in ascending/descening order", "");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
